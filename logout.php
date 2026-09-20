@@ -2,5 +2,5 @@
 
 session_start();
 
-unset($_SESSION["SESSIONID"]);
+unset($_SESSION["user"]);
 header("location: login.php");

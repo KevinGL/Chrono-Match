@@ -17,7 +17,7 @@ function createToken()
 
 function readEnv()
 {
-    $file = fopen("../.env", "r");
+    $file = fopen(__DIR__ . "/../.env", "r");
 
     if(!$file)
     {
@@ -61,4 +61,51 @@ function readEnv()
     fclose($file);
 
     return $res;
+}
+
+function getNextSessions(): array
+{
+    $nb = 20;
+
+    $date = new DateTimeImmutable("now");
+
+    $date = $date->setTimezone(new DateTimeZone("Europe/Paris"));
+    $date = $date->setTime(21, 0, 0);
+
+    $res = [];
+
+    while(1)
+    {
+        $day = $date->format("w");
+        
+        if($day === '2' || $day === '4' || $day === '0')
+        {
+            array_push($res, $date);
+        }
+
+        if(count($res) === $nb)
+        {
+            break;
+        }
+
+        $timestamp = $date->getTimestamp();
+        $timestamp += 24 * 3600;
+        $date = $date->setTimestamp($timestamp);
+    }
+
+    return $res;
+}
+
+function registered(PDO $pdo, DateTimeImmutable $date): bool
+{
+    $sth = $pdo->prepare("SELECT * FROM inscriptions WHERE user_id=:id AND date=:date");
+    $sth->execute(['id' => $_SESSION["user"]["id"], "date" => $date->format("Y-m-d H:i:s")]);
+    $res = $sth->fetch();
+
+    if(!$res)
+    {
+        return false;
+    }
+
+    return true;
 }
