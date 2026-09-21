@@ -12,6 +12,6 @@ if(!isset($_SESSION["user"]))
 
 <?php require "includes/header.php" ?>
 
-BIENVENUE <?= $_SESSION["user"]["username"] ?> !
+BIENVENUE <?= htmlspecialchars($_SESSION["user"]["username"]) ?> !
 
 <?php require "includes/footer.php" ?>

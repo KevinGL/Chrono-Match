@@ -98,8 +98,8 @@ function getNextSessions(): array
 
 function registered(PDO $pdo, DateTimeImmutable $date): bool
 {
-    $sth = $pdo->prepare("SELECT * FROM inscriptions WHERE user_id=:id AND date=:date");
-    $sth->execute(['id' => $_SESSION["user"]["id"], "date" => $date->format("Y-m-d H:i:s")]);
+    $sth = $pdo->prepare("SELECT * FROM inscriptions WHERE user_id=:user_id AND date=:date");
+    $sth->execute(['user_id' => $_SESSION["user"]["id"], "date" => $date->format("Y-m-d H:i:s")]);
     $res = $sth->fetch();
 
     if(!$res)

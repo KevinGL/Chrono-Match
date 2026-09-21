@@ -19,7 +19,7 @@ $res = $sth->fetch();
 
 if(!$res)
 {
-    $_SESSION["flash"] = ["type" => "error", "content" => "Utilisateur introuvable"];
+    $_SESSION["flash"] = ["type" => "error", "content" => "Identifiants incorrects"];
     header("location: /login.php");
     exit();
 }
@@ -27,13 +27,13 @@ if(!$res)
 else
 if(!password_verify($_POST["password"], $res["password"]))
 {
-    $_SESSION["flash"] = ["type" => "error", "content" => "Mot de passe incorrect"];
+    $_SESSION["flash"] = ["type" => "error", "content" => "Identifiants incorrects"];
     header("location: /login.php");
     exit();
 }
 
 else
 {
-    $_SESSION["user"] = ["username" => $res["username"], "email" => $res["email"], "phone" => $res["phone"], "id" => $res["id"]];
+    $_SESSION["user"] = $res;
     header("location: /home.php");
 }
