@@ -2,9 +2,9 @@
 
 require_once __DIR__ . "/../includes/functions.php";
 
-$url = readEnv();
+$url = readEnv("DATABASE_URL");
 
-$db = parse_url($url["DATABASE_URL"]);
+$db = parse_url($url);
 
 $dsn = sprintf(
     "mysql:host=%s;port=%d;dbname=%s;charset=utf8mb4",
