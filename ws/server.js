@@ -2,12 +2,16 @@ import 'dotenv/config';
 import { WebSocketServer } from "ws";
 import jwt from "jsonwebtoken";
 import url from 'url';
+import { matchmaking } from './functions.js';
 
 const wss = new WebSocketServer({ port: 8080 });
 
 console.log("Serveur WebSocket démarré sur ws://localhost:8080");
 
 let users = new Map();
+let alreadyTouch = [];
+
+setInterval(() => matchmaking(users, alreadyTouch), 1000);
 
 wss.on('connection', (ws, request) => {
     console.log('Nouveau client connecté !');
@@ -18,9 +22,9 @@ wss.on('connection', (ws, request) => {
     try
     {
         const decoded = jwt.verify(token, process.env.JWT_KEY);
-        users.set(decoded.iat, { "username": decoded.username, "gender": decoded.gender, "search": decoded.search });
+        users.set(decoded.id, { username: decoded.username, gender: decoded.gender, search: decoded.search, ws });
 
-        //console.log(users);
+        ws.send(JSON.stringify({status: "waiting"}));
     }
     catch (err)
     {
