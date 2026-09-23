@@ -61,6 +61,14 @@ $jwt = generateJWT(["id" => $_SESSION["user"]["id"], "username" => $_SESSION["us
             li.innerText = `${data.username} : ${data.message}`;
             document.getElementById("messages").appendChild(li);
         }
+
+        else
+        if(data.status === "disconnect")
+        {
+            document.getElementById("form").hidden = true;
+            document.getElementById("messages").hidden = true;
+            document.getElementById("status").innerHTML = "Patientez nous vous mettons en relation avec quelqu'un ...";
+        }
     }
 
     document.getElementById("form").addEventListener("submit", (e) =>

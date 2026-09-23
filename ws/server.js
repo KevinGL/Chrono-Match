@@ -2,7 +2,7 @@ import 'dotenv/config';
 import { WebSocketServer } from "ws";
 import jwt from "jsonwebtoken";
 import url from 'url';
-import { matchmaking } from './functions.js';
+import { matchmaking, manageTiming } from './functions.js';
 
 const wss = new WebSocketServer({ port: 8080 });
 
@@ -13,6 +13,7 @@ let alreadyTouch = [];
 let rooms = [];
 
 setInterval(() => matchmaking(users, alreadyTouch, rooms), 1000);
+setInterval(() => manageTiming(rooms), 1000);
 
 wss.on('connection', (ws, request) => {
     console.log('Nouveau client connecté !');
@@ -23,7 +24,7 @@ wss.on('connection', (ws, request) => {
     try
     {
         const decoded = jwt.verify(token, process.env.JWT_KEY);
-        users.set(decoded.id, { username: decoded.username, gender: decoded.gender, search: decoded.search, ws });
+        users.set(decoded.id, { username: decoded.username, gender: decoded.gender, search: decoded.search, available: true, ws });
 
         ws.send(JSON.stringify({status: "waiting"}));
     }
@@ -39,20 +40,20 @@ wss.on('connection', (ws, request) => {
         {
             const index = rooms.findIndex((room) =>
             {
-                return room[0].ws === ws || room[1].ws === ws;
+                return room.user1.ws === ws || room.user2.ws === ws;
             });
 
             if(index > -1)
             {
-                if(rooms[index][0].ws === ws)
+                if(rooms[index].user1.ws === ws)
                 {
-                    rooms[index][1].ws.send(JSON.stringify({status: "receive", username: rooms[index][0].username, message: data.message}));
+                    rooms[index].user2.ws.send(JSON.stringify({status: "receive", username: rooms[index].user1.username, message: data.message}));
                 }
 
                 else
-                if(rooms[index][1].ws === ws)
+                if(rooms[index].user2.ws === ws)
                 {
-                    rooms[index][0].ws.send(JSON.stringify({status: "receive", username: rooms[index][1].username, message: data.message}));
+                    rooms[index].user1.ws.send(JSON.stringify({status: "receive", username: rooms[index].user2.username, message: data.message}));
                 }
             }
         }
