@@ -1,4 +1,4 @@
-export const matchmaking = (users, alreadyTouch) =>
+export const matchmaking = (users, alreadyTouch, rooms) =>
 {
     users.forEach((currentUser, id1) =>
     {
@@ -37,6 +37,8 @@ export const matchmaking = (users, alreadyTouch) =>
             
             currentUser.ws.send(JSON.stringify({status: "contact", contact: otherUser}));
             otherUser.ws.send(JSON.stringify({status: "contact", contact: currentUser}));
+
+            rooms.push([currentUser, otherUser]);
         }
     });
 }

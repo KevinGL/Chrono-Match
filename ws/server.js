@@ -10,8 +10,9 @@ console.log("Serveur WebSocket démarré sur ws://localhost:8080");
 
 let users = new Map();
 let alreadyTouch = [];
+let rooms = [];
 
-setInterval(() => matchmaking(users, alreadyTouch), 1000);
+setInterval(() => matchmaking(users, alreadyTouch, rooms), 1000);
 
 wss.on('connection', (ws, request) => {
     console.log('Nouveau client connecté !');
@@ -31,13 +32,29 @@ wss.on('connection', (ws, request) => {
         ws.close(4001, "Authentification échouée");
     }
 
-    /*ws.on('message', (message) => {
+    ws.on('message', (message) => {
         const data = JSON.parse(message);
-        console.log(data);
 
-        if(data.type === "connect")
+        if(data.type === "message")
         {
-            //
+            const index = rooms.findIndex((room) =>
+            {
+                return room[0].ws === ws || room[1].ws === ws;
+            });
+
+            if(index > -1)
+            {
+                if(rooms[index][0].ws === ws)
+                {
+                    rooms[index][1].ws.send(JSON.stringify({status: "receive", username: rooms[index][0].username, message: data.message}));
+                }
+
+                else
+                if(rooms[index][1].ws === ws)
+                {
+                    rooms[index][0].ws.send(JSON.stringify({status: "receive", username: rooms[index][1].username, message: data.message}));
+                }
+            }
         }
-    });*/
+    });
 });
