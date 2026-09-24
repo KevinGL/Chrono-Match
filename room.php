@@ -44,6 +44,7 @@ $jwt = generateJWT(["id" => $_SESSION["user"]["id"], "username" => $_SESSION["us
 <script>
     const jwtToken = <?= json_encode($jwt) ?>;
     const socket = new WebSocket(`ws://localhost:8080?token=${encodeURIComponent(jwtToken)}`);
+    let idContact = "";
 
     socket.onmessage = (res) =>
     {
@@ -59,6 +60,7 @@ $jwt = generateJWT(["id" => $_SESSION["user"]["id"], "username" => $_SESSION["us
         {
             document.getElementById("status").innerHTML = `Voici ${data.contact.username}`;
             document.getElementById("form").hidden = false;
+            idContact = data.contact.id;
         }
 
         else
@@ -97,7 +99,7 @@ $jwt = generateJWT(["id" => $_SESSION["user"]["id"], "username" => $_SESSION["us
         }
     }
 
-    document.getElementById("form").addEventListener("submit", (e) =>
+    document.getElementById("form").addEventListener("submit", async (e) =>
     {
         e.preventDefault();
         
@@ -110,5 +112,17 @@ $jwt = generateJWT(["id" => $_SESSION["user"]["id"], "username" => $_SESSION["us
         const li = document.createElement("li");
         li.innerText = `Vous : ${message}`
         document.getElementById("messages").appendChild(li);
+
+        //////////////////////////////////////
+
+        await fetch("api/message.php", {
+            method: "POST",
+            headers: { "X-CSRF-TOKEN": '<?= $_SESSION["csrf_token"] ?>', "Content-Type": "application/json" },
+            body: JSON.stringify({
+                receiver: idContact,
+                content: message,
+                createAt: Date.now()
+            })
+        });
     });
 </script>

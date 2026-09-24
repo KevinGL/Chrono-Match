@@ -1,5 +1,20 @@
 import crypto from 'crypto';
 
+function encryptId(id)
+{
+    const key = Buffer.from(process.env.SECRET_KEY, 'utf-8'); // 16 bytes
+    const iv = Buffer.from(process.env.IV_KEY, 'utf-8');     // 12 bytes
+    
+    const cipher = crypto.createCipheriv('aes-128-gcm', key, iv);
+    
+    let encrypted = cipher.update(id.toString(), 'utf8', 'hex');
+    encrypted += cipher.final('hex');
+    
+    const tag = cipher.getAuthTag().toString('hex'); // 16 bytes
+    
+    return `${encrypted}:${tag}`;
+}
+
 export const matchmaking = (users, alreadyTouch, rooms) =>
 {
     users.forEach((currentUser, id1) =>
@@ -41,28 +56,13 @@ export const matchmaking = (users, alreadyTouch, rooms) =>
             currentUser.available = false;
             otherUser.available = false;
             
-            currentUser.ws.send(JSON.stringify({status: "contact", contact: otherUser}));
-            otherUser.ws.send(JSON.stringify({status: "contact", contact: currentUser}));
+            currentUser.ws.send(JSON.stringify({status: "contact", contact: {...otherUser, id: encryptId(id2)}}));
+            otherUser.ws.send(JSON.stringify({status: "contact", contact: {...currentUser, id: encryptId(id1)}}));
 
             //rooms.push([currentUser, otherUser]);
             rooms.push({user1: {...currentUser, id: id1}, user2: {...otherUser, id: id2}, ts: Date.now()});
         }
     });
-}
-
-function encryptId(id)
-{
-    const key = Buffer.from(process.env.SECRET_KEY, 'utf-8'); // 16 bytes
-    const iv = Buffer.from(process.env.IV_KEY, 'utf-8');     // 12 bytes
-    
-    const cipher = crypto.createCipheriv('aes-128-gcm', key, iv);
-    
-    let encrypted = cipher.update(id.toString(), 'utf8', 'hex');
-    encrypted += cipher.final('hex');
-    
-    const tag = cipher.getAuthTag().toString('hex'); // 16 bytes
-    
-    return `${encrypted}:${tag}`;
 }
 
 export const manageTiming = (rooms) =>
