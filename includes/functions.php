@@ -24,8 +24,6 @@ function readEnv(string $key): string
         return "";
     }
 
-    $res = "";
-
     while(1)
     {
         $line = fgets($file);
@@ -34,33 +32,29 @@ function readEnv(string $key): string
             break;
         }
 
-        if($line[0] === "#")
+        if ($line === "" || $line[0] === "#" || !str_contains($line, "="))
         {
             continue;
         }
 
-        $k = substr($line, 0, strpos($line, "="));
-        $v = substr($line, strpos($line, "=") + 1);
+        $line = trim($line);
 
-        if($v[0] === "\"")
-        {
-            $v = substr($v, 1);
-        }
+        [$k, $v] = explode("=", $line, 2);
 
-        if($v[strlen($v) - 1] === "\"")
-        {
-            $v = substr($v, 0, strlen($v) - 1);
-        }
+        $k = trim($k);
+        $v = trim($v);
 
-        if($k !== "" && $v !== "" && $k === $key)
+        $v = trim($v, '"\'');
+
+        if ($k === $key)
         {
-            $res = $v;
+            return $v;
         }
     }
 
     fclose($file);
 
-    return $res;
+    return "";
 }
 
 function getNextSessions(): array
@@ -161,4 +155,30 @@ function generateJWT(array $payload, string $secret, int $expiryInSeconds = 30):
 function base64UrlEncode(string $data): string 
 {
     return rtrim(strtr(base64_encode($data), '+/', '-_'), '=');
+}
+
+function decryptId(string $cipheredId): int 
+{
+    [$encryptedHex, $tagHex] = explode(':', $cipheredId);
+    
+    $key = readEnv('SECRET_KEY');
+    $iv  = readEnv('IV_KEY');
+    
+    $encrypted = hex2bin($encryptedHex);
+    $tag       = hex2bin($tagHex);
+    
+    $decrypted = openssl_decrypt(
+        $encrypted,
+        'aes-128-gcm',
+        $key,
+        OPENSSL_RAW_DATA,
+        $iv,
+        $tag
+    );
+
+    if ($decrypted === false) {
+        throw new \Exception("Déchiffrement échoué ou ID altéré");
+    }
+
+    return (int) $decrypted;
 }

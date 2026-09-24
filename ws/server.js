@@ -31,6 +31,7 @@ wss.on('connection', (ws, request) => {
     catch (err)
     {
         ws.close(4001, "Authentification échouée");
+        console.log("!!!");
     }
 
     ws.on('message', (message) => {

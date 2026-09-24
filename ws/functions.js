@@ -1,3 +1,5 @@
+import crypto from 'crypto';
+
 export const matchmaking = (users, alreadyTouch, rooms) =>
 {
     users.forEach((currentUser, id1) =>
@@ -43,9 +45,24 @@ export const matchmaking = (users, alreadyTouch, rooms) =>
             otherUser.ws.send(JSON.stringify({status: "contact", contact: currentUser}));
 
             //rooms.push([currentUser, otherUser]);
-            rooms.push({user1: currentUser, user2: otherUser, ts: Date.now()});
+            rooms.push({user1: {...currentUser, id: id1}, user2: {...otherUser, id: id2}, ts: Date.now()});
         }
     });
+}
+
+function encryptId(id)
+{
+    const key = Buffer.from(process.env.SECRET_KEY, 'utf-8'); // 16 bytes
+    const iv = Buffer.from(process.env.IV_KEY, 'utf-8');     // 12 bytes
+    
+    const cipher = crypto.createCipheriv('aes-128-gcm', key, iv);
+    
+    let encrypted = cipher.update(id.toString(), 'utf8', 'hex');
+    encrypted += cipher.final('hex');
+    
+    const tag = cipher.getAuthTag().toString('hex'); // 16 bytes
+    
+    return `${encrypted}:${tag}`;
 }
 
 export const manageTiming = (rooms) =>
@@ -58,8 +75,8 @@ export const manageTiming = (rooms) =>
             room.user1.available = true;
             room.user2.available = true;
             
-            room.user1.ws.send(JSON.stringify({status: "disconnect"}));
-            room.user2.ws.send(JSON.stringify({status: "disconnect"}));
+            room.user1.ws.send(JSON.stringify({status: "disconnect", contact: encryptId(room.user2.id)}));
+            room.user2.ws.send(JSON.stringify({status: "disconnect", contact: encryptId(room.user1.id)}));
             
             const index = rooms.indexOf(room);
             rooms.splice(index, 1);

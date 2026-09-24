@@ -31,6 +31,14 @@ $jwt = generateJWT(["id" => $_SESSION["user"]["id"], "username" => $_SESSION["us
     <input type="submit" value="Envoyer" />
 </form>
 
+<div id="modal" hidden>
+    <p>Vous matchez ?</p>*
+    <div>
+        <span id="yes">Oui</span>
+        <span id="no">Non</span>
+    </div>
+</div>
+
 <?php require_once "includes/footer.php" ?>
 
 <script>
@@ -40,7 +48,6 @@ $jwt = generateJWT(["id" => $_SESSION["user"]["id"], "username" => $_SESSION["us
     socket.onmessage = (res) =>
     {
         const data = JSON.parse(res.data);
-        console.log(data);
 
         if(data.status === "waiting")
         {
@@ -67,7 +74,28 @@ $jwt = generateJWT(["id" => $_SESSION["user"]["id"], "username" => $_SESSION["us
         {
             document.getElementById("form").hidden = true;
             document.getElementById("messages").hidden = true;
-            document.getElementById("status").innerHTML = "Patientez nous vous mettons en relation avec quelqu'un ...";
+            document.getElementById("modal").hidden = false;
+
+            console.log(data.contact);
+
+            document.getElementById("yes").addEventListener("click", async () =>
+            {
+                document.getElementById("modal").hidden = true;
+                document.getElementById("status").innerHTML = "Patientez nous vous mettons en relation avec quelqu'un ...";
+
+                const response = await fetch(`api/like.php?contact=${data.contact}`);
+        
+                if (!response.ok)
+                {
+                    throw new Error(`Erreur HTTP : ${response.status}`);
+                }
+            });
+
+            document.getElementById("no").addEventListener("click", () =>
+            {
+                document.getElementById("modal").hidden = true;
+                document.getElementById("status").innerHTML = "Patientez nous vous mettons en relation avec quelqu'un ...";
+            });
         }
     }
 
