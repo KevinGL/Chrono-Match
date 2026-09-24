@@ -76,14 +76,12 @@ $jwt = generateJWT(["id" => $_SESSION["user"]["id"], "username" => $_SESSION["us
             document.getElementById("messages").hidden = true;
             document.getElementById("modal").hidden = false;
 
-            console.log(data.contact);
-
             document.getElementById("yes").addEventListener("click", async () =>
             {
                 document.getElementById("modal").hidden = true;
                 document.getElementById("status").innerHTML = "Patientez nous vous mettons en relation avec quelqu'un ...";
 
-                const response = await fetch(`api/like.php?contact=${data.contact}`);
+                const response = await fetch(`api/like.php?contact=${data.contact}`, {headers: { "X-CSRF-TOKEN": '<?= $_SESSION["csrf_token"] ?>' }});
         
                 if (!response.ok)
                 {

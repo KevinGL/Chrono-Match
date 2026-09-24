@@ -35,5 +35,6 @@ if(!password_verify($_POST["password"], $res["password"]))
 else
 {
     $_SESSION["user"] = $res;
+    $_SESSION["csrf_token"] = bin2hex(random_bytes(32));
     header("location: /home.php");
 }
