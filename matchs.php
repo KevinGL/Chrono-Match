@@ -6,7 +6,7 @@ session_start();
 
 if(!isset($_SESSION["user"]))
 {
-    echo json_encode(["code" => 401, "content" => "Not authenticated"]);
+    header("location: login.php");
     exit();
 }
 
@@ -40,9 +40,23 @@ else
     $th->execute(["match_id" => $matchId]);
     $messages = $th->fetchAll();
 
-    $th = $pdo->prepare("SELECT u.id AS contact_id FROM messages m JOIN users u ON m.sender=u.id WHERE m.match_id=:match_id AND u.id<>:user_id LIMIT 1");
-    $th->execute(["match_id" => $matchId, "user_id" => $_SESSION["user"]["id"]]);
-    $contactId = encryptId($th->fetch()["contact_id"]);
+    $th = $pdo->prepare("SELECT user_id1 AS contact_id FROM matchs WHERE user_id2=:current_user AND id=:match_id");
+    $th->execute(["current_user" => $_SESSION["user"]["id"], "match_id" => $matchId]);
+
+    $res = $th->fetch();
+    
+    if($res)
+    {
+        $contactId = encryptId($res["contact_id"]);
+    }
+
+    else
+    {
+        $th = $pdo->prepare("SELECT user_id2 AS contact_id FROM matchs WHERE user_id1=:current_user AND id=:match_id");
+        $th->execute(["current_user" => $_SESSION["user"]["id"], "match_id" => $matchId]);
+        $res = $th->fetch();
+        $contactId = encryptId($res["contact_id"]);
+    }
 
     echo "<ul id=\"messages\">";
 
