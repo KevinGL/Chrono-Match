@@ -47,7 +47,10 @@ $exists = $th->fetch();
 if($likesRecip && !$exists)
 {
     $th = $pdo->prepare("INSERT INTO matchs (user_id1, user_id2) VALUES (:user_id1, :user_id2)");
-    $res = $th->execute(["user_id1" => $_SESSION["user"]["id"], "user_id2" => $id]);
+    $th->execute(["user_id1" => $_SESSION["user"]["id"], "user_id2" => $id]);
+
+    $th = $pdo->prepare("UPDATE messages SET match_id=:match_id WHERE sender=:user1 AND receiver=:user2 OR sender=:user2 AND receiver=:user1");
+    $th->execute(["match_id" => (int) $pdo->lastInsertId(), "user1" => $_SESSION["user"]["id"], "user2" => $id]);
 }
 
 echo json_encode(["code" => 200, "content" => "ok"]);

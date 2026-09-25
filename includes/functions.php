@@ -157,6 +157,35 @@ function base64UrlEncode(string $data): string
     return rtrim(strtr(base64_encode($data), '+/', '-_'), '=');
 }
 
+function encryptId(int|string $id): string
+{
+    $key = readEnv('SECRET_KEY');
+    $iv  = readEnv('IV_KEY');
+
+    $tag = '';
+    
+    $encrypted = openssl_encrypt(
+        (string) $id,
+        'aes-128-gcm',
+        $key,
+        OPENSSL_RAW_DATA,
+        $iv,
+        $tag,
+        '',
+        16
+    );
+
+    if ($encrypted === false)
+    {
+        throw new \Exception("Échec du chiffrement de l'ID.");
+    }
+
+    $encryptedHex = bin2hex($encrypted);
+    $tagHex       = bin2hex($tag);
+
+    return "{$encryptedHex}:{$tagHex}";
+}
+
 function decryptId(string $cipheredId): int 
 {
     [$encryptedHex, $tagHex] = explode(':', $cipheredId);

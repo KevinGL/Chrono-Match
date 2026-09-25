@@ -43,7 +43,7 @@ $jwt = generateJWT(["id" => $_SESSION["user"]["id"], "username" => $_SESSION["us
 
 <script>
     const jwtToken = <?= json_encode($jwt) ?>;
-    const socket = new WebSocket(`ws://localhost:8080?token=${encodeURIComponent(jwtToken)}`);
+    const socket = new WebSocket(`ws://localhost:4000?token=${encodeURIComponent(jwtToken)}`);
     let idContact = "";
 
     socket.onmessage = (res) =>

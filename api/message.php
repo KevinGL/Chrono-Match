@@ -27,10 +27,20 @@ $receiver = decryptId($data["receiver"]);
 $content = htmlspecialchars($data["content"]);
 $createdAt = new DateTime();
 $createdAt->setTimezone(new DateTimeZone("Europe/Paris"));
-$createdAt->setTimestamp($data["createAt"] / 1000);
+$createdAt->setTimestamp(floor($data["createAt"] / 1000));
+$matchId = $data["matchId"] ?? null;
 
-$th = $pdo->prepare("INSERT INTO messages (sender, receiver, content, createdAt) VALUES (:sender, :receiver, :content, :createdAt)");
-$res = $th->execute(["sender" => $sender, "receiver" => $receiver, "content" => $content, "createdAt" => $createdAt->format("Y-m-d H:m:s")]);
+if(!$matchId)
+{
+    $th = $pdo->prepare("INSERT INTO messages (sender, receiver, content, createdAt) VALUES (:sender, :receiver, :content, :createdAt)");
+    $res = $th->execute(["sender" => $sender, "receiver" => $receiver, "content" => $content, "createdAt" => $createdAt->format("Y-m-d H:m:s")]);
+}
+
+else
+{
+    $th = $pdo->prepare("INSERT INTO messages (sender, receiver, content, createdAt, match_id) VALUES (:sender, :receiver, :content, :createdAt, :matchId)");
+    $res = $th->execute(["sender" => $sender, "receiver" => $receiver, "content" => $content, "createdAt" => $createdAt->format("Y-m-d H:m:s"), "matchId" => decryptId($matchId)]);
+}
 
 if(!$res)
 {

@@ -4,9 +4,9 @@ import jwt from "jsonwebtoken";
 import url from 'url';
 import { matchmaking, manageTiming } from './functions.js';
 
-const wss = new WebSocketServer({ port: 8080 });
+const wss = new WebSocketServer({ port: 4000 });
 
-console.log("Serveur WebSocket démarré sur ws://localhost:8080");
+console.log("Serveur speed dating démarré sur ws://localhost:4000");
 
 let users = new Map();
 let alreadyTouch = [];
@@ -31,7 +31,6 @@ wss.on('connection', (ws, request) => {
     catch (err)
     {
         ws.close(4001, "Authentification échouée");
-        console.log("!!!");
     }
 
     ws.on('message', (message) => {

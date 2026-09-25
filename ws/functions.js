@@ -15,6 +15,32 @@ function encryptId(id)
     return `${encrypted}:${tag}`;
 }
 
+export function decryptId(encryptedData)
+{
+    try {
+        const key = Buffer.from(process.env.SECRET_KEY, 'utf-8'); // 16 bytes
+        const iv = Buffer.from(process.env.IV_KEY, 'utf-8');     // 12 bytes
+
+        const [encrypted, tagHex] = encryptedData.split(':');
+        
+        if (!encrypted || !tagHex) {
+            throw new Error('Format de chaîne chiffrée invalide.');
+        }
+
+        const decipher = crypto.createDecipheriv('aes-128-gcm', key, iv);
+        
+        decipher.setAuthTag(Buffer.from(tagHex, 'hex'));
+
+        let decrypted = decipher.update(encrypted, 'hex', 'utf8');
+        decrypted += decipher.final('utf8');
+
+        return isNaN(decrypted) ? decrypted : parseInt(decrypted, 10);
+    } catch (error) {
+        console.error('Erreur lors du déchiffrement :', error.message);
+        return null;
+    }
+}
+
 export const matchmaking = (users, alreadyTouch, rooms) =>
 {
     users.forEach((currentUser, id1) =>
