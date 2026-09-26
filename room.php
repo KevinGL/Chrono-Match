@@ -12,8 +12,8 @@ if(!isset($_SESSION["user"]))
 
 if(!validRoom($pdo))
 {
-    header("location: home.php");
-    exit();
+    /*header("location: home.php");
+    exit();*/
 }
 
 $jwt = generateJWT(["id" => $_SESSION["user"]["id"], "username" => $_SESSION["user"]["username"], "gender" => $_SESSION["user"]["gender"], "search" => $_SESSION["user"]["search"]], readEnv("JWT_KEY"));
@@ -61,6 +61,13 @@ $jwt = generateJWT(["id" => $_SESSION["user"]["id"], "username" => $_SESSION["us
             document.getElementById("status").innerHTML = `Voici ${data.contact.username}`;
             document.getElementById("form").hidden = false;
             idContact = data.contact.id;
+
+            const response = fetch(`api/dating.php?contact=${idContact}`, {headers: { "X-CSRF-TOKEN": '<?= $_SESSION["csrf_token"] ?>' }});
+        
+            if (!response.ok)
+            {
+                throw new Error(`Erreur HTTP : ${response.status}`);
+            }
         }
 
         else

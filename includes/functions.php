@@ -211,3 +211,107 @@ function decryptId(string $cipheredId): int
 
     return (int) $decrypted;
 }
+
+function getNextSession(): string
+{
+    $res = "";
+
+    $dateNext = new DateTime();
+    $dateNext->setTimezone(new DateTimeZone("Europe/Paris"));
+    $dateNext->setTime(21, 0, 0, 0);
+
+    while(1)
+    {
+        $day = $dateNext->format("w");
+
+        if($day === "2" || $day === "4" || $day === "0")
+        {
+            break;
+        }
+
+        $ts = $dateNext->getTimestamp();
+        $ts += 24 * 3600;
+        $dateNext->setTimestamp($ts);
+    }
+
+    $now = new DateTime();
+    $now->setTimezone(new DateTimeZone("Europe/Paris"));
+
+    $ts1 = $dateNext->getTimestamp();
+    $ts2 = $now->getTimestamp();
+
+    if($ts1 - $ts2 < 21 * 3600)
+    {
+        $res = "Ce soir à 21h";
+    }
+
+    else
+    if($ts1 - $ts2 >= 21 * 3600 && $ts1 - $ts2 < (24 + 21) * 3600)
+    {
+        $res = "Demain à 21h";
+    }
+
+    else
+    if($ts1 - $ts2 >= (24 + 21) * 3600 && $ts1 - $ts2 < (48 + 21) * 3600)
+    {
+        $res = "Après-demain à 21h";
+    }
+
+    return $res;
+}
+
+function isRegistred(PDO $pdo): bool
+{
+    $dateNext = new DateTime();
+    $dateNext->setTimezone(new DateTimeZone("Europe/Paris"));
+    $dateNext->setTime(21, 0, 0, 0);
+
+    while(1)
+    {
+        $day = $dateNext->format("w");
+
+        if($day === "2" || $day === "4" || $day === "0")
+        {
+            break;
+        }
+
+        $ts = $dateNext->getTimestamp();
+        $ts += 24 * 3600;
+        $dateNext->setTimestamp($ts);
+    }
+
+    $res = false;
+
+    $th = $pdo->prepare("SELECT * FROM inscriptions WHERE user_id=:user AND date >= NOW() ORDER BY date ASC LIMIT 1");
+    $th->execute(["user" => $_SESSION["user"]["id"]]);
+
+    $datas = $th->fetch();
+
+    if($datas)
+    {
+        if($dateNext->format("Y-m-d") === $datas["date"])
+        {
+            $res = true;
+        }
+    }
+
+    return $res;
+}
+
+function getNbMatchs(PDO $pdo): int
+{
+    $th = $pdo->prepare("SELECT * FROM matchs WHERE user_id1 = :user OR user_id2 = :user");
+    $th->execute(["user" => $_SESSION["user"]["id"]]);
+    $datas = $th->fetchAll();
+
+    return count($datas);
+}
+
+function getNbDatings(PDO $pdo): int
+{
+    $th = $pdo->prepare("SELECT * FROM datings WHERE user_id1 = :user");
+    $th->execute(["user" => $_SESSION["user"]["id"]]);
+    $datas = $th->fetchAll();
+
+    return count($datas);
+}

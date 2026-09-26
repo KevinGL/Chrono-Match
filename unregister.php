@@ -20,10 +20,10 @@ $date = new DateTime();
 $date->setTimezone(new DateTimeZone("Europe/Paris"));
 $date->setTimestamp((int)$_GET["session"]);
 
-$sth = $pdo->prepare("DELETE FROM inscriptions WHERE user_id=:user_id AND date=:created_at");
+$sth = $pdo->prepare("DELETE FROM inscriptions WHERE user_id=:user_id AND date=:date");
 $sth->execute([
     'user_id'    => $_SESSION["user"]["id"],
-    'created_at' => $date->format("Y-m-d H:i:s")
+    'date' => $date->format("Y-m-d")
 ]);
 
 header("location: sessions.php");
