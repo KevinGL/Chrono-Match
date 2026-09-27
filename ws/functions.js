@@ -82,8 +82,8 @@ export const matchmaking = (users, alreadyTouch, rooms) =>
             currentUser.available = false;
             otherUser.available = false;
             
-            currentUser.ws.send(JSON.stringify({status: "contact", contact: {...otherUser, id: encryptId(id2)}}));
-            otherUser.ws.send(JSON.stringify({status: "contact", contact: {...currentUser, id: encryptId(id1)}}));
+            currentUser.ws.send(JSON.stringify({status: "contact", contact: {...otherUser, id: encryptId(id2)}, expiresAt: Date.now() + 180 * 1000}));
+            otherUser.ws.send(JSON.stringify({status: "contact", contact: {...currentUser, id: encryptId(id1)}, expiresAt: Date.now() + 180 * 1000}));
 
             //rooms.push([currentUser, otherUser]);
             rooms.push({user1: {...currentUser, id: id1}, user2: {...otherUser, id: id2}, ts: Date.now()});
