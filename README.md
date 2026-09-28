@@ -16,7 +16,7 @@ Inspirée des rencontres éclair traditionnelles, la plateforme plonge deux util
 | :---: | :---: |
 | ![Sessions](docs/screenshots/Sessions.png) | ![Chat](docs/screenshots/Chat.png) |
 
-| Bilan de Session (Oui/Non) | Révélation du Match |
+| Chat avec compte à rebours | Bilan de Session (Oui/Non) |
 | :---: | :---: |
 | ![Verdict](docs/screenshots/Speed_dating(1).png) | ![Match](docs/screenshots/Speed_dating(2).png) |
 
