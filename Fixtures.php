@@ -1,37 +1,68 @@
 <?php
 
-die();
-
-require_once "config/db.php";
 require_once __DIR__ . '/vendor/autoload.php';
 
-$faker = Faker\Factory::create('fr_FR');
+$options = getopt('', [
+    'nb::',
+    'host::',
+    'port::',
+    'username::',
+    'password::',
+    'dbname::'
+]);
 
-$nb = 200;
+$nb       = $options['nb']       ?? 10;
+$host     = $options['host']     ?? '127.0.0.1';
+$port     = $options['port']     ?? '3306';
+$username = $options['username'] ?? 'root';
+$password = $options['password'] ?? '';
+$dbname   = $options['dbname']   ?? 'chronomatch';
 
-$sql = "INSERT INTO users (username, email, password, phone, gender, search, city, description, roles) VALUES ";
-
-$rows = [];
-$values = [];
-
-for($i = 0 ; $i < $nb ; $i++)
+if($nb < 1)
 {
-    $rows[] = "(?, ?, ?, ?, ?, ?, ?, ?, ?)";
-
-    $values[] = $faker->userName();
-    $values[] = $faker->email();
-    $values[] = password_hash("1234", PASSWORD_BCRYPT);
-    $values[] = $faker->phoneNumber();
-    $values[] = random_int(0, 1) === 0 ? "man" : "woman";
-    $values[] = random_int(0, 1) === 0 ? "man" : "woman";
-    $values[] = $faker->city();
-    $values[] = $faker->paragraph();
-    $values[] = json_encode(['ROLE_USER']);
+    echo "Erreur, 1 user min accepté";
+    die();
 }
 
-$sql .= implode(', ',$rows);
+try {
+    echo "Connexion au serveur MySQL...\n";
+    
+    $pdo = new PDO("mysql:host=$host;port=$port;dbname=$dbname;charset=utf8mb4", $username, $password, [
+        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION
+    ]);
 
-$stmt = $pdo->prepare($sql);
-$stmt->execute($values);
+    $faker = Faker\Factory::create('fr_FR');
 
-echo "$nb utilisateurs insérés avec succès !";
+    $sql = "INSERT INTO users (username, email, password, phone, gender, search, city, description, roles) VALUES ";
+
+    $rows = [];
+    $values = [];
+
+    echo "Création users...\n";
+
+    for($i = 0 ; $i < $nb ; $i++)
+    {
+        $rows[] = "(?, ?, ?, ?, ?, ?, ?, ?, ?)";
+
+        $values[] = $faker->userName();
+        $values[] = $faker->email();
+        $values[] = password_hash("1234", PASSWORD_BCRYPT);
+        $values[] = $faker->phoneNumber();
+        $values[] = random_int(0, 1) === 0 ? "man" : "woman";
+        $values[] = random_int(0, 1) === 0 ? "man" : "woman";
+        $values[] = $faker->city();
+        $values[] = $faker->paragraph();
+        $values[] = json_encode(['ROLE_USER']);
+    }
+
+    $sql .= implode(', ',$rows);
+
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute($values);
+
+    echo "$nb utilisateurs insérés avec succès !";
+}
+catch (Exception $e) {
+    echo " Erreur lors de l'initialisation : " . $e->getMessage() . "\n";
+    exit(1);
+}
